@@ -41,60 +41,32 @@ async function run() {
     });
 
     app.post("/destination", async (req, res) => {
-
-      const destinationData = req.body;
-
-      console.log(destinationData);
-
-      const result =
-        await destinationCollection.insertOne(destinationData);
-
-      res.send(result);
-    });
-
-        app.put("/destination/:id", async (req, res) => {
-
-      const id = req.params.id;
-
-      const updatedData = req.body;
-
-      const query = {
-        _id: new ObjectId(id),
-      };
-
-      const updatedDoc = {
-        $set: updatedData,
-      };
-
-      const result =
-        await destinationCollection.updateOne(
-          query,
-          updatedDoc
-        );
-
-      res.send(result);
-    });
-
-        app.delete("/destination/:id", async (req, res) => {
-
-      const id = req.params.id;
-
-      const query = {
-        _id: new ObjectId(id),
-      };
-
-      const result =
-        await destinationCollection.deleteOne(query);
-
-      res.send(result);
-    });
-
-    app.post("/destination", async (req, res) => {
       const destinationData = req.body;
       console.log(destinationData);
       const result = await destinationCollection.insertOne(destinationData);
-
       res.json(result);
+    });
+
+    app.put("/destination/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const updatedDoc = {
+        $set: updatedData,
+      };
+      const result = await destinationCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
+    app.delete("/destination/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const result = await destinationCollection.deleteOne(query);
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
