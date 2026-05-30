@@ -41,6 +41,18 @@ async function run() {
     });
 
     app.post("/destination", async (req, res) => {
+
+      const destinationData = req.body;
+
+      console.log(destinationData);
+
+      const result =
+        await destinationCollection.insertOne(destinationData);
+
+      res.send(result);
+    });
+
+    app.post("/destination", async (req, res) => {
       const destinationData = req.body;
       console.log(destinationData);
       const result = await destinationCollection.insertOne(destinationData);
