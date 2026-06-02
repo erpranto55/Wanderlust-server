@@ -88,11 +88,40 @@ async function run() {
     });
 
     //BOOKINGS CODE
-
+    
+    // BOOK TOUR
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
 
       const result = await bookingsCollection.insertOne(booking);
+
+      res.send(result);
+    });
+
+    // GET USER BOOKINGS
+
+    app.get("/bookings/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const result = await bookingsCollection
+        .find({
+          userEmail: email,
+        })
+        .toArray();
+
+      res.send(result);
+    });
+
+    // DELETE BOOKING
+
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+
+      const query = {
+        _id: new ObjectId(id),
+      };
+
+      const result = await bookingsCollection.deleteOne(query);
 
       res.send(result);
     });
