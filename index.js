@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 dotenv.config();
 
 const uri = process.env.MONGODB_URI;
@@ -19,6 +20,28 @@ const client = new MongoClient(uri, {
   },
 });
 
+const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jsks"));
+
+const verifyToken =async (req, res, next) => {
+  const authHeader = req?.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const { payload } = await jwtVerify(token,JWKS)
+      next();
+  } catch (error) {
+    return res.status(403).json({message:"Forbidden"})
+  }
+
+
+};
+
 async function run() {
   try {
     await client.connect();
@@ -34,25 +57,14 @@ async function run() {
       res.json(result);
     });
 
-    app.get(
-      "/destination/:id",
-      (req, res, next) => {
-        const header = req.headers.authorization;
-        if (header === "logged in") {
-          next();
-        } else {
-          res.status(401).json({ message: "Unauthorized" });
-        }
-      },
-      async (req, res) => {
-        const id = req.params.id;
-        const query = {
-          _id: new ObjectId(id),
-        };
-        const result = await destinationCollection.findOne(query);
-        res.send(result);
-      },
-    );
+    app.get("/destination/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const result = await destinationCollection.findOne(query);
+      res.send(result);
+    });
 
     app.post("/destination", async (req, res) => {
       const destinationData = req.body;
