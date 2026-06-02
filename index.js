@@ -78,17 +78,28 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/destination/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = {
-        _id: new ObjectId(id),
-      };
-      const result = await destinationCollection.deleteOne(query);
-      res.send(result);
-    });
+    app.delete(
+      "/destination/:id",
+      (req, res, next) => {
+        const header = req.headers.authorization;
+        if (header === "logged in") {
+          next();
+        } else{
+          res.status(401).json({message:'Unauthorized'})
+        }
+      },
+      async (req, res) => {
+        const id = req.params.id;
+        const query = {
+          _id: new ObjectId(id),
+        };
+        const result = await destinationCollection.deleteOne(query);
+        res.send(result);
+      },
+    );
 
     //BOOKINGS CODE
-    
+
     // BOOK TOUR
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
