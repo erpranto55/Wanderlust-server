@@ -20,9 +20,11 @@ const client = new MongoClient(uri, {
   },
 });
 
-const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jsks"));
+const JWKS = createRemoteJWKSet(
+  new URL(`${process.env.CLIENT_URL}/api/auth/jsks`),
+);
 
-const verifyToken =async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   const authHeader = req?.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -33,18 +35,16 @@ const verifyToken =async (req, res, next) => {
   }
 
   try {
-    const { payload } = await jwtVerify(token,JWKS)
-      next();
+    const { payload } = await jwtVerify(token, JWKS);
+    next();
   } catch (error) {
-    return res.status(403).json({message:"Forbidden"})
+    return res.status(403).json({ message: "Forbidden" });
   }
-
-
 };
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const db = client.db("wanderlust");
     const destinationCollection = db.collection("destinations");
@@ -113,7 +113,7 @@ async function run() {
     //BOOKINGS CODE
 
     // BOOK TOUR
-    app.post("/bookings", async (req, res) => {
+    app.post("/bookings", verifyToken, async (req, res) => {
       const booking = req.body;
 
       const result = await bookingsCollection.insertOne(booking);
@@ -137,7 +137,7 @@ async function run() {
 
     // DELETE BOOKING
 
-    app.delete("/bookings/:id", async (req, res) => {
+    app.delete("/bookings/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
 
       const query = {
@@ -149,7 +149,7 @@ async function run() {
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
