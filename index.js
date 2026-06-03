@@ -21,7 +21,7 @@ const client = new MongoClient(uri, {
 });
 
 const JWKS = createRemoteJWKSet(
-  new URL(`${process.env.CLIENT_URL}/api/auth/jsks`),
+  new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
 );
 
 const verifyToken = async (req, res, next) => {
@@ -166,3 +166,9 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+app.get("/", (req, res) => {
+  res.send("Server is running fine!");
+});
+
+module.exports = app;
